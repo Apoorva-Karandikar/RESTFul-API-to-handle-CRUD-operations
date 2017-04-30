@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MovieDB.Models;
+using Newtonsoft.Json;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,26 +12,45 @@ namespace MovieDB.Controllers
 {
     public class MoviesController : ApiController
     {
-        // GET api/<controller>
-        public IEnumerable<string> Get() {
-            return new string[] { "value1", "value2" };
+        static readonly IMovieRepository repository = new MovieRepository();
+        
+        [Route("movies")]
+        [HttpGet]
+        [SwaggerOperation("get-movies")]
+        public List<Movie> ListAllMovies() {
+            return repository.ListAllMovies();
+        }
+        
+        [Route("movies/{id}")]
+        [HttpGet]
+        [SwaggerOperation("get-movies-by-id")]
+        public Movie GetMovieById(string id) {
+            return repository.GetMovieById(id);
         }
 
-        // GET api/<controller>/5
-        public string Get(int id) {
-            return "value";
-        }
-
-        // POST api/<controller>
-        public void Post([FromBody]string value) {
+        [Route("movies")]
+        [HttpPost]
+        [SwaggerOperation("create-new-movie")]
+        public void Post([FromBody]string jsonString) {
+            var newMovie = JsonConvert.DeserializeObject<Movie>(jsonString);
+            repository.Add(newMovie);
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody]string value) {
+        [Route("movies")]
+        [HttpPut]
+        [SwaggerOperation("update-existing-movie")]
+        public bool Put([FromBody]string jsonString) {
+            var updatedMovie = JsonConvert.DeserializeObject<Movie>(jsonString);
+            return repository.UpdateMovie(updatedMovie);
         }
 
         // DELETE api/<controller>/5
-        public void Delete(int id) {
+        [Route("movies/{id}")]
+        [HttpDelete]
+        [SwaggerOperation("delete-existing-movie")]
+        public void Delete(string id) {
+            repository.DeleteMovie(id);
         }
     }
 }
